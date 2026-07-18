@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# PyInstaller build output
+build/
+dist/
+*.spec
+
+# Runtime files
+uploads/
+
+# macOS
+.DS_Store

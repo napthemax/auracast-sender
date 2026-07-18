@@ -29,7 +29,7 @@ These cost days of debugging — read them before buying hardware:
 1. **The built-in Mac Bluetooth chip cannot do Auracast.** Not with any software. The chip (e.g. BCM4378) hangs off PCIe and macOS never exposes LE Audio ISO channels. A USB dongle is mandatory.
 2. **Hearing aids can only receive *standard-quality* Auracast broadcasts.** The Sennheiser BTD 700 transmits high-quality-only broadcasts — hearing aids will *see* the broadcast but fail to sync audio ("stream not found"). It works great for headphones, not for hearing aids.
 3. **The FMA120 must be configured once** using [FlooCast](https://github.com/Flairmesh/FlooCast): set mode to **Broadcast**, and turn **"Broadcast High-Quality Music" OFF**. Settings persist inside the dongle.
-4. **iPhone Auracast support is limited (2026).** Use an Android phone with your hearing aid app (e.g. ReSound Smart 3D) as the broadcast assistant.
+4. **iPhone Auracast support is limited (2026).** It works on iOS with this version, but Android seems more stable. Use an Android phone with your hearing aid app if you need stability (e.g. ReSound Smart 3D) as the broadcast assistant. 
 5. **Hearing aids must rejoin the broadcast** in their app every time the stream restarts. Silence usually means "not joined", not "broken".
 
 ## Installation

@@ -57,7 +57,7 @@ To broadcast what the Mac is playing (music, video calls, YouTube):
 brew install blackhole-2ch   # then reboot
 ```
 
-Set **BlackHole 2ch** as the output device in System Settings → Sound, and pick "Systemljud" as the source in the app.
+Set **BlackHole 2ch** as the output device in System Settings → Sound, and pick "System sound" as the source in the app.
 
 ## Usage
 

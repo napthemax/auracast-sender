@@ -6,9 +6,21 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV="$SCRIPT_DIR/.venv"
 
+app_version() {
+    local ver sha
+    ver=$(tr -d '[:space:]' < "$SCRIPT_DIR/VERSION" 2>/dev/null || echo "unknown")
+    sha=$(git -C "$SCRIPT_DIR" rev-parse --short HEAD 2>/dev/null || true)
+    if [ -n "$sha" ]; then
+        echo "$ver ($sha)"
+    else
+        echo "$ver"
+    fi
+}
+
 echo ""
 echo "======================================"
 echo "  Auracast Sender – Installation"
+echo "  $(app_version)"
 echo "======================================"
 echo ""
 
@@ -74,7 +86,7 @@ chmod +x "$SCRIPT_DIR/start_server.command"
 
 echo ""
 echo "======================================"
-echo "  Klar!"
+echo "  Klar!  $(app_version)"
 echo "======================================"
 echo ""
 echo "  Starta API-servern (för webapp): dubbelklicka start_server.command"

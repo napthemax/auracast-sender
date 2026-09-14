@@ -20,8 +20,20 @@ import logging
 import os
 import secrets
 import shutil
+import sys
 from pathlib import Path
 from typing import Optional
+
+from version import APP_VERSION, format_version
+
+# Same SemVer as the app (root VERSION file). Do not hardcode a second number.
+API_VERSION = APP_VERSION
+
+# --version before FastAPI/audio imports so it works without those packages,
+# and so it does not create ~/.auracast-sender/api_key as a side effect.
+if __name__ == "__main__" and "--version" in sys.argv:
+    print(format_version("Auracast Sender API"))
+    raise SystemExit(0)
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,7 +46,6 @@ from manager import BroadcastManager
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-API_VERSION = "1.1"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
 DEFAULT_MAX_UPLOAD_MB = 50
@@ -392,6 +403,7 @@ def _print_banner(host: str, port: int) -> None:
         "",
         "  ╔" + "═" * w + "╗",
         "  ║" + "  Auracast Sender API".ljust(w) + "║",
+        "  ║" + f"  {format_version('Auracast Sender API')}".ljust(w) + "║",
         "  ╠" + "═" * w + "╣",
         "  ║" + f"  API:   http://{display_host}:{port}".ljust(w) + "║",
         "  ║" + f"  Docs:  http://{display_host}:{port}/docs".ljust(w) + "║",
@@ -413,6 +425,11 @@ def main():
     import uvicorn
 
     parser = argparse.ArgumentParser(description="Auracast Sender HTTP API")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=format_version("Auracast Sender API"),
+    )
     parser.add_argument(
         "--host",
         default=None,

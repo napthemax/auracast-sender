@@ -43,7 +43,7 @@ These cost days of debugging — read them before buying hardware:
 ### Option B — from source (any Mac)
 
 ```bash
-git clone https://github.com/matsguldbrand/auracast-sender.git
+git clone https://github.com/napthemax/auracast-sender.git
 cd auracast-sender
 bash setup.sh              # installs Homebrew deps + Python venv + packages
 ./start_auracast.command   # GUI (includes the API server)
@@ -68,19 +68,62 @@ Set **BlackHole 2ch** as the output device in System Settings → Sound, and pic
 
 ## HTTP API
 
-The app embeds a REST API on `http://localhost:8765` (open CORS), so you can build your own remote control — a web app, Shortcuts, a Stream Deck button:
+The app embeds a REST API on `http://127.0.0.1:8765` so you can build your own remote control — a **local** web app, Shortcuts, or a Stream Deck button. Interactive docs: `http://127.0.0.1:8765/docs`.
 
-| Endpoint | Purpose |
+**Secure by default** (local GUI + a web client on the same Mac still work):
+
+- Binds to **localhost** (`127.0.0.1`), not the LAN. LAN bind is opt-in (`--lan`, `--host 0.0.0.0`, or `AURACAST_HOST=0.0.0.0`).
+- A local API key is generated on first run and stored at `~/.auracast-sender/api_key` (printed in the GUI log and on `python3 server.py` startup). Send it as `Authorization: Bearer <key>` or `X-Api-Key: <key>` on every `/api` route **except** `GET /api/health`.
+- CORS allows `http://localhost` / `http://127.0.0.1` (any port) by default. Extra origins: `AURACAST_CORS_ORIGINS` (comma-separated). Do not set `*` unless you understand the risk.
+- `POST /api/start` with `source: "file"` only accepts `file_path` values that resolve **inside** the app `uploads/` directory (the path returned by `/api/upload`). The desktop GUI file picker does not go through HTTP and is unchanged.
+- Uploads are capped at **50 MB** (`AURACAST_MAX_UPLOAD_MB`).
+
+The desktop GUI talks to the broadcast engine in-process, so it does **not** need the API key. A Lovable/web client on this Mac should read the key from the GUI log or `~/.auracast-sender/api_key` and send it on each request (see [API_FOR_LOVABLE.md](API_FOR_LOVABLE.md)).
+
+| Endpoint | Purpose | Auth |
+|----------|---------|------|
+| `GET /api/health` | Liveness check (includes `"auth": "api_key"`) | open |
+| `GET /api/devices` | List audio devices; Auracast dongles flagged | key |
+| `GET /api/status` | Broadcast state + VU level (poll for meters) | key |
+| `POST /api/start` | Start broadcast `{source, volume, loop, file_path?}` | key |
+| `POST /api/stop` | Stop broadcast | key |
+| `POST /api/volume` | Live volume `{volume: 0..1}` | key |
+| `POST /api/upload` | Upload a WAV file into `uploads/` (max 50 MB) | key |
+| `GET /api/uploads` | List uploaded WAV files | key |
+
+Example:
+
+```bash
+KEY=$(cat ~/.auracast-sender/api_key)
+curl -s http://127.0.0.1:8765/api/health
+curl -s -H "Authorization: Bearer $KEY" http://127.0.0.1:8765/api/status
+```
+
+### LAN bind (opt-in)
+
+```bash
+python3 server.py --lan              # or: python3 server.py --host 0.0.0.0
+AURACAST_HOST=0.0.0.0 python3 server.py
+AURACAST_LAN=1 ./start_auracast.command   # GUI-embedded API
+```
+
+Other devices on your network can then reach the API, **but they still need the key**. Treat that key like a password for your microphone and speakers.
+
+### Do not expose this API on the public internet
+
+A public tunnel (naked `cloudflared`, ngrok, a hardcoded trycloudflare URL, port-forwarding) in front of an unauthenticated control API would let strangers start/stop broadcasts and upload files. **Do not do that.**
+
+If you still choose to put a tunnel in front: keep API-key auth enabled, set `AURACAST_CORS_ORIGINS` to the **exact** origin of your web app (not `*`), and understand that anyone who obtains the key has remote control of the sender. A hosted HTTPS web app talking to `http://127.0.0.1` will also hit the browser mixed-content block — prefer a local preview of the web app, or Chrome’s “Insecure content” exception for that origin, rather than a public tunnel.
+
+| Variable | Meaning |
 |----------|---------|
-| `GET /api/health` | Liveness check |
-| `GET /api/devices` | List audio devices; Auracast dongles flagged |
-| `GET /api/status` | Broadcast state + VU level (poll for meters) |
-| `POST /api/start` | Start broadcast `{source, volume, loop, file_path?}` |
-| `POST /api/stop` | Stop broadcast |
-| `POST /api/volume` | Live volume `{volume: 0..1}` |
-| `POST /api/upload` | Upload a WAV file |
-
-Interactive documentation at `http://localhost:8765/docs`. To control it over the internet, put a tunnel in front (e.g. `cloudflared tunnel --url http://localhost:8765`).
+| `AURACAST_HOST` / `AURACAST_BIND` | Bind address (default `127.0.0.1`) |
+| `AURACAST_LAN=1` | Bind `0.0.0.0` (same as `--lan`) |
+| `AURACAST_PORT` | Port (default `8765`) |
+| `AURACAST_API_KEY` | Use this key instead of the generated file |
+| `AURACAST_API_KEY_FILE` | Path to the key file (default `~/.auracast-sender/api_key`) |
+| `AURACAST_CORS_ORIGINS` | Extra CORS origins, comma-separated; `*` is an insecure opt-in |
+| `AURACAST_MAX_UPLOAD_MB` | Upload size limit in MB (default `50`) |
 
 ## Architecture notes (for the curious)
 

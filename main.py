@@ -270,16 +270,31 @@ class AuracastApp(tk.Tk):
         if not self._api_module:
             return
 
+        host = self._api_module.resolve_bind_host()
+        port = self._api_module.resolve_port()
+
         def run():
             try:
                 import uvicorn
-                uvicorn.run(self._api_module.app, host="0.0.0.0",
-                            port=8765, log_level="warning")
+                uvicorn.run(self._api_module.app, host=host,
+                            port=port, log_level="warning")
             except Exception as exc:
                 self._queue.put(("log", f"API-server: {exc}", "warn"))
 
         threading.Thread(target=run, daemon=True).start()
-        self._queue.put(("log", "API-server startad: http://localhost:8765", "dim"))
+        display = "127.0.0.1" if host in ("0.0.0.0", "::") else host
+        self._queue.put(("log", f"API-server startad: http://{display}:{port}", "dim"))
+        self._queue.put((
+            "log",
+            f"API-nyckel: {self._api_module.API_KEY}  (sparad i {self._api_module.API_KEY_FILE})",
+            "dim",
+        ))
+        if host not in ("127.0.0.1", "localhost", "::1"):
+            self._queue.put((
+                "log",
+                "API lyssnar utanför localhost – håll nyckeln hemlig.",
+                "warn",
+            ))
 
     # ------------------------------------------------------------------
     # Enheter

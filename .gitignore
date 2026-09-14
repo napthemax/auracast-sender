@@ -10,6 +10,7 @@ dist/
 
 # Runtime files
 uploads/
+.api_key
 
 # macOS
 .DS_Store

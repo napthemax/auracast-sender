@@ -141,6 +141,18 @@ bash bygg_app.sh   # PyInstaller + Info.plist mic-permission patch + codesign
 
 The Info.plist patch matters: without `NSMicrophoneUsageDescription`, macOS silently blocks microphone access for bundled apps.
 
+## Versioning
+
+App and HTTP API share **one SemVer** in the root [`VERSION`](VERSION) file (currently **1.1.0**). `version.py` reads it for `--version`, GUI/server banners, FastAPI metadata, and `GET /api/health`. Do not introduce a second hardcoded API version.
+
+To cut a release:
+
+1. Bump `VERSION` (SemVer: `MAJOR.MINOR.PATCH`)
+2. Commit that change
+3. Tag the commit: `git tag v1.1.0` then `git push origin v1.1.0` (the tag name is `v` + the file contents)
+
+GitHub Releases are optional and can wait until there is a new `.app` build to attach. The existing GitHub Release **v1.0.0** is superseded by tag **v1.1.0** once that tag is on `main`.
+
 ## Troubleshooting
 
 | Symptom | Fix |

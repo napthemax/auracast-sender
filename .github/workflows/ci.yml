@@ -23,3 +23,9 @@ jobs:
 
       - name: Compile Python sources
         run: python -m py_compile $(git ls-files '*.py')
+
+      - name: Check VERSION helper
+        run: |
+          python -c "from version import APP_VERSION, read_version; v=open('VERSION').read().strip(); assert APP_VERSION == v == read_version(), (APP_VERSION, v); print(APP_VERSION)"
+          python main.py --version
+          python server.py --version

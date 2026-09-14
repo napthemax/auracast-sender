@@ -26,6 +26,12 @@ if "--worker" in sys.argv:
     worker_main(sys.argv[sys.argv.index("--worker") + 1:])
     sys.exit(0)
 
+# --version before Tk/audio imports so it works without those packages.
+if "--version" in sys.argv:
+    from version import format_version
+    print(format_version())
+    sys.exit(0)
+
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import threading
@@ -33,6 +39,7 @@ import queue
 import logging
 
 from manager import BroadcastManager
+from version import APP_VERSION, format_version
 
 logging.basicConfig(
     level=logging.INFO,
@@ -57,7 +64,7 @@ C = {
 class AuracastApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Auracast Sender")
+        self.title(f"Auracast Sender {APP_VERSION}")
         self.configure(bg=C["bg"])
         self.geometry("640x560")
         self.resizable(False, False)
@@ -78,6 +85,7 @@ class AuracastApp(tk.Tk):
         self._was_broadcasting = False
 
         self._start_api_server()
+        self._queue.put(("log", format_version(), "dim"))
 
         # Tillståndsvariabler
         self.var_source = tk.StringVar(value="mic")

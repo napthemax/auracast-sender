@@ -61,7 +61,7 @@ eller Chrome “Insecure content” för den origin, inte en publik tunnel.
 ### `GET /api/health` (ingen nyckel)
 Kontrollera att servern är igång.
 ```json
-{ "ok": true, "service": "auracast-sender", "version": "1.1", "auth": "api_key" }
+{ "ok": true, "service": "auracast-sender", "version": "1.1.0", "auth": "api_key" }
 ```
 
 ### `GET /api/devices`

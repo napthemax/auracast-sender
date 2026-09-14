@@ -388,22 +388,25 @@ def root():
 def _print_banner(host: str, port: int) -> None:
     display_host = "127.0.0.1" if host in ("0.0.0.0", "::") else host
     w = 62
-    print("")
-    print("  ╔" + "═" * w + "╗")
-    print("  ║" + "  Auracast Sender API".ljust(w) + "║")
-    print("  ╠" + "═" * w + "╣")
-    print("  ║" + f"  API:   http://{display_host}:{port}".ljust(w) + "║")
-    print("  ║" + f"  Docs:  http://{display_host}:{port}/docs".ljust(w) + "║")
-    print("  ║" + f"  Bind:  {host}".ljust(w) + "║")
-    print("  ║" + f"  Key:   {API_KEY}".ljust(w) + "║")
-    print("  ║" + f"  File:  {API_KEY_FILE}".ljust(w) + "║")
-    print("  ╚" + "═" * w + "╝")
-    print("")
-    print("  Send the key as Authorization: Bearer <key> or X-Api-Key.")
+    lines = [
+        "",
+        "  ╔" + "═" * w + "╗",
+        "  ║" + "  Auracast Sender API".ljust(w) + "║",
+        "  ╠" + "═" * w + "╣",
+        "  ║" + f"  API:   http://{display_host}:{port}".ljust(w) + "║",
+        "  ║" + f"  Docs:  http://{display_host}:{port}/docs".ljust(w) + "║",
+        "  ║" + f"  Bind:  {host}".ljust(w) + "║",
+        "  ║" + f"  Key:   {API_KEY}".ljust(w) + "║",
+        "  ║" + f"  File:  {API_KEY_FILE}".ljust(w) + "║",
+        "  ╚" + "═" * w + "╝",
+        "",
+        "  Send the key as Authorization: Bearer <key> or X-Api-Key.",
+    ]
     if host not in ("127.0.0.1", "localhost", "::1"):
-        print("  WARNING: Listening beyond localhost. Keep the API key secret;")
-        print("  do not tunnel this API to the public internet.")
-    print("")
+        lines.append("  WARNING: Listening beyond localhost. Keep the API key secret;")
+        lines.append("  do not tunnel this API to the public internet.")
+    lines.append("")
+    print("\n".join(lines), flush=True)
 
 
 def main():
